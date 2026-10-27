@@ -1,0 +1,11 @@
+{
+  "name": "tavla",
+  "version": "1.0.0",
+  "description": "Tavla (backgammon) in the browser: drag or tap to move, play the computer (Easy/Normal) or a friend, English and Turkish.",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test"
+  },
+  "license": "MIT"
+}
