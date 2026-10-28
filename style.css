@@ -232,11 +232,12 @@ button {
 }
 
 .board-wrap {
-  --board-w: 822;
-  --board-h: 588;
-  /* Height of everything except the board (header 48, players 32, status 34, buttons 44, footer 40,
-     three 4px gaps), so on a phone the board gets all the rest and never pushes the controls off screen. */
-  --chrome: 210px;
+  --board-w: 796;
+  --board-h: 576;
+  /* Height of everything above and below the board up to the buttons (header 48, players 32, status 34,
+     buttons 44, three 4px gaps), so on a phone the board gets all the rest and never pushes the controls
+     off screen. The footer may sit below the fold; the board's points are wider for it. */
+  --chrome: 170px;
   --avail-h: calc(100vh - var(--chrome));
   grid-area: board;
   position: relative;
@@ -259,7 +260,7 @@ button {
   min-width: 0;
   max-width: max(240px, calc(var(--avail-h) * var(--board-w) / var(--board-h)));
   aspect-ratio: var(--board-w) / var(--board-h);
-  border-radius: 18px;
+  border-radius: 8px;
   touch-action: none;
   user-select: none;
   -webkit-user-select: none;
@@ -340,6 +341,10 @@ button {
 @media (max-width: 480px) {
   .player-level {
     display: none;
+  }
+
+  .game {
+    padding: 0 8px;
   }
 }
 

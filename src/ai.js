@@ -1,6 +1,7 @@
 /**
  * Computer opponent: a one-ply search over every legal turn, scored by a hand-made
- * evaluation (pip count, blots under fire, made points, primes, home board, bar).
+ * evaluation (pip count, blots under fire, deep blots, made points, primes, builders,
+ * split back checkers, home board, bar).
  * Pure module; the Easy level adds noise from an injected seeded generator.
  */
 import { POINT_COUNT, WHITE, opponent, pipDistance } from './board.js';
@@ -16,8 +17,20 @@ const POINT_VALUE = [0, 1, 2, 3, 4.5, 6, 6, 5, 3, 2, 1.5, 1, 1, 0.5, 0.5, 0.5, 0
 const PRIME_VALUE = [0, 0, 1, 3, 6, 10, 15];
 /** Pips lost on top of the distance already travelled when a blot is hit. */
 const HIT_COST = 6;
+/** The same for a back checker in the opponent's home board, which loses little by being hit. */
+const BACK_HIT_COST = 2;
+/** Pip distance where the opponent's home board starts. */
+const THEIR_HOME = 19;
+/** Pip distance from which checkers count as back checkers for the split bonus. */
+const BACK_ZONE = 16;
 /** Penalty for each checker beyond the third on a point. */
 const STACK_PENALTY = 0.5;
+/** Extra penalty for a blot deep in the home board (indexed by pip distance 1..4), which is hard to cover. */
+const DEEP_BLOT = [0, 5, 4.5, 3, 1];
+/** Bonus for each extra point the back checkers occupy in the opponent's home board (a split). */
+const SPLIT_BONUS = 3.5;
+/** Bonus for each outfield point (pip distance 7..11) with a checker on it, ready to make a new point. */
+const BUILDER_BONUS = 2.5;
 /** Every distinct roll with its weight out of 36 and a bit mask of the distances it can travel. */
 const ROLLS = buildRolls();
 
@@ -49,6 +62,9 @@ export function evaluate(board, player) {
     PRIME_VALUE[Math.min(longestPrime(mine, theirRearmost), 6)] +
     barPressure(mine, theirs) -
     blotRisk(mine, theirs) -
+    deepBlots(mine, theirRearmost) +
+    backSplit(mine, theirs) +
+    builders(mine) -
     stackPenalty(mine)
   );
 }
@@ -153,7 +169,7 @@ function blotRisk(mine, theirs) {
     if (mine[r] !== 1) continue;
     let mask = 0;
     for (let s = 0; s < r; s++) if (theirs[s] > 0) mask |= 1 << (r - s);
-    if (mask !== 0) blots.push({ mask, cost: 25 - r + HIT_COST });
+    if (mask !== 0) blots.push({ mask, cost: 25 - r + (r >= THEIR_HOME ? BACK_HIT_COST : HIT_COST) });
   }
   if (blots.length === 0) return 0;
   let risk = 0;
@@ -169,4 +185,25 @@ function stackPenalty(mine) {
   let penalty = 0;
   for (let r = 1; r <= 24; r++) penalty += Math.max(0, mine[r] - 3) * STACK_PENALTY;
   return penalty;
+}
+
+function builders(mine) {
+  let occupied = 0;
+  for (let r = 7; r <= 11; r++) if (mine[r] > 0) occupied += 1;
+  return occupied * BUILDER_BONUS;
+}
+
+/** Blots on the lowest points while an opposing checker can still hit them. */
+function deepBlots(mine, theirRearmost) {
+  let penalty = 0;
+  for (let r = theirRearmost + 1; r < DEEP_BLOT.length; r++) if (mine[r] === 1) penalty += DEEP_BLOT[r];
+  return penalty;
+}
+
+/** Back checkers spread over more points find a way out (and an anchor) more easily, while the opponent's board is open. */
+function backSplit(mine, theirs) {
+  if (homePoints(theirs, THEIR_HOME, 24) >= 3) return 0;
+  let occupied = 0;
+  for (let r = BACK_ZONE; r <= 24; r++) if (mine[r] > 0) occupied += 1;
+  return Math.max(0, occupied - 1) * SPLIT_BONUS;
 }

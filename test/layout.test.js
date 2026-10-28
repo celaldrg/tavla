@@ -19,8 +19,8 @@ function centre(rect) {
 
 test('the portrait board is the landscape board turned on its side', () => {
   const [landscape, portrait] = LAYOUTS;
-  assert.deepEqual([landscape.width, landscape.height], [822, 588]);
-  assert.deepEqual([portrait.width, portrait.height], [588, 822]);
+  assert.deepEqual([landscape.width, landscape.height], [796, 576]);
+  assert.deepEqual([portrait.width, portrait.height], [576, 796]);
   for (let index = 0; index < POINT_COUNT; index++) {
     const [x, y] = landscape.checker(index, 2);
     assert.deepEqual(portrait.checker(index, 2), [y, x]);

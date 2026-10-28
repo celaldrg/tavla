@@ -125,3 +125,16 @@ test('a turn with no legal move is complete at once', () => {
   assert.ok(isTurnComplete(turn));
   assert.deepEqual(allowedSteps(turn), []);
 });
+
+test('the last checker may be borne off with the larger die, which ends the turn', () => {
+  const board = createBoard({ white: { 2: 1 }, black: { 23: 15 }, off: [14, 0] });
+  const turn = startTurn(board, WHITE, [6, 1]);
+  const direct = findStep(turn, 2, OFF);
+  assert.ok(direct, 'bearing off from the 3-point with the 6 is allowed');
+  assert.equal(direct.die, 6);
+  assert.ok(findStep(turn, 2, 1, 1), 'moving down with the 1 first still works');
+  const after = playStep(turn, direct);
+  assert.equal(after.board.off[WHITE], 15);
+  assert.ok(isTurnComplete(after));
+  assert.deepEqual(allowedSteps(after), []);
+});

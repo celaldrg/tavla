@@ -52,6 +52,15 @@ test('normal level makes the classic opening points for both colours', () => {
   }
 });
 
+test('normal level opens without deep blots and splits the back checkers with small rolls', () => {
+  const opening = (dice) => chooseTurn(startingBoard(), WHITE, dice).steps.map((step) => `${step.from}>${step.to}`).sort();
+  // White's 24-point is index 23, the mid-point 12, the 8-point 7 (index = pips - 1).
+  assert.deepEqual(opening([6, 2]), ['12>10', '23>17'], '6-2: 24/18 13/11');
+  assert.deepEqual(opening([6, 3]), ['12>9', '23>17'], '6-3: 24/18 13/10');
+  assert.deepEqual(opening([2, 1]), ['12>10', '23>22'], '2-1: 13/11 24/23');
+  assert.deepEqual(opening([3, 2]), ['12>10', '12>9'], '3-2: 13/11 13/10');
+});
+
 test('the AI hits a blot when it can make a point on it', () => {
   const board = createBoard({
     white: { 23: 2, 12: 4, 9: 1, 7: 3, 5: 5 },

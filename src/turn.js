@@ -1,8 +1,11 @@
 /**
  * A turn in progress: lets a player make one step at a time while keeping every
  * step consistent with a complete legal turn (both dice used when possible, the
- * larger die when only one can be used). Pure module; turn objects are immutable.
+ * larger die when only one can be used). A step that bears off the player's last
+ * checker is always allowed and ends the turn, since the game is over. Pure module;
+ * turn objects are immutable.
  */
+import { CHECKERS, OFF } from './board.js';
 import { applyStep, maxDiceUsable, singleSteps } from './rules.js';
 import { diceToPlay, distinctDice, removeDie } from './dice.js';
 
@@ -52,7 +55,7 @@ function forcedDie(board, player, dice, total) {
  * @returns {boolean}
  */
 export function isTurnComplete(turn) {
-  return turn.played.length >= turn.total;
+  return turn.played.length >= turn.total || hasWon(turn);
 }
 
 /**
@@ -62,7 +65,7 @@ export function isTurnComplete(turn) {
  */
 export function allowedSteps(turn) {
   const left = turn.total - turn.played.length;
-  if (left <= 0) return [];
+  if (left <= 0 || hasWon(turn)) return [];
   const dice = turn.forcedDie === null ? distinctDice(turn.remaining) : [turn.forcedDie];
   const allowed = [];
   for (const die of dice) {
@@ -73,7 +76,27 @@ export function allowedSteps(turn) {
       }
     }
   }
-  return allowed;
+  return [...allowed, ...winningSteps(turn, allowed)];
+}
+
+function hasWon(turn) {
+  return turn.board.off[turn.player] === CHECKERS;
+}
+
+/**
+ * Bear-off steps that finish the game but are not already allowed, such as bearing
+ * the last checker off with the larger die instead of moving it with the smaller one first.
+ */
+function winningSteps(turn, allowed) {
+  if (turn.board.off[turn.player] !== CHECKERS - 1) return [];
+  const known = (step) => allowed.some((other) => other.from === step.from && other.die === step.die && other.to === OFF);
+  const steps = [];
+  for (const die of distinctDice(turn.remaining)) {
+    for (const step of singleSteps(turn.board, turn.player, die)) {
+      if (step.to === OFF && !known(step)) steps.push(step);
+    }
+  }
+  return steps;
 }
 
 /**

@@ -121,7 +121,7 @@ export function createBoardView(root) {
 
 function drawBase(layer, layout) {
   clear(layer);
-  svg('rect', { ...rectAttributes(layout.outline), rx: 18, class: 'board-frame' }, layer);
+  svg('rect', { ...rectAttributes(layout.outline), rx: 12, class: 'board-frame' }, layer);
   for (const field of layout.fields) svg('rect', { ...rectAttributes(field), class: 'board-field' }, layer);
   svg('rect', { ...rectAttributes(layout.bar), class: 'board-bar' }, layer);
   for (const player of [WHITE, BLACK]) svg('rect', { ...rectAttributes(layout.tray(player)), rx: 8, class: 'board-tray' }, layer);

@@ -19,11 +19,11 @@ export const CHECKER_RADIUS = 25;
 /** Edge length of a die. */
 export const DIE_SIZE = 46;
 
-const FRAME = 14;
+const FRAME = 8;
 const POINT = 56;
 const BAR_WIDTH = 56;
-const TRAY_GAP = 10;
-const TRAY = 56;
+const TRAY_GAP = 4;
+const TRAY = 48;
 const HALF = 280;
 const TRIANGLE = 226;
 const DIAMETER = 2 * CHECKER_RADIUS;
